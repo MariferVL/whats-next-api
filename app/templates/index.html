@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>What's Next - API</title>
+  <meta name="description" content="What's Next API - A modern, creative solution to track daily classes and connect educators with students.">
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}" type="image/x-icon">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const titleElement = document.querySelector(".hero-title");
+      const text = titleElement.textContent;
+      titleElement.innerHTML = "";
+      for (let i = 0; i < text.length; i++) {
+        const span = document.createElement("span");
+        span.textContent = text[i];
+        span.className = i % 2 === 0 ? "letter dark" : "letter white";
+        titleElement.appendChild(span);
+      }
+    });
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar">
+      <div class="nav-container">
+        <a href="/" class="logo-link">
+          <img src="{{ url_for('static', filename='img/logo.png') }}" alt="What's Next Logo" class="logo">
+        </a>
+        <div class="nav-links">
+          <a href="/api-docs/" class="nav-link">Try API Docs</a>
+          <a href="{{ url_for('static', filename='swagger.yaml') }}" class="nav-link" download>Download Swagger</a>
+        </div>
+      </div>
+    </nav>    
+    <section class="hero">
+      <div class="hero-content">
+        <h1 class="hero-title">What's  Next</h1>
+        <p class="hero-tagline">Empowering education with modern API solutions.</p>
+        <div class="hero-buttons">
+          <a href="https://github.com/MariferVL/whats-next" target="_blank" class="btn primary-btn">GitHub Repo</a>
+          <a href="https://app.swaggerhub.com/apis-docs/marifervl/whats-next_api/1.0.0" target="_blank" class="btn secondary-btn">API Docs</a>
+        </div>
+      </div>
+      <div class="hero-overlay"></div>
+    </section>
+  </header>
+  <main>
+    <section class="features">
+      <div class="features-container">
+        <div class="feature-card">
+          <h2>Interactive API</h2>
+          <p>Experience seamless integration and real-time data handling with our API.</p>
+        </div>
+        <div class="feature-card">
+          <h2>Modern Interface</h2>
+          <p>Enjoy a design that merges functionality with creative expression.</p>
+        </div>
+        <div class="feature-card">
+          <h2>Secure & Scalable</h2>
+          <p>Built with robust security standards and performance in mind.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <div class="footer-container">
+      <p>&copy; 2025 What's Next. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>

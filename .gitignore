@@ -1,0 +1,44 @@
+# Python bytecode files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+
+# Flask
+instance/
+.pytest_cache/
+.coverage
+*.db
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Terraform
+*.tfstate
+*.tfstate.*
+*.terraform/
+crash.log
+*.tfvars
+tf_plan.out
+
+
+# AWS credentials 
+*.pem
+*.key
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDEs and Editors
+.vscode/
+.idea/
+
+# SwaggerHub
+swagger.yml
+
+.env
