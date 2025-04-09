@@ -1,21 +1,24 @@
 pipeline {
     agent any
-    
     environment {
         DOCKER_HUB_CREDS = credentials('dockerhub-credentials')
     }
-    
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
+                
         stage('Test') {
             steps {
-                sh 'python3 -m pip install -r requirements.txt'
-                sh 'pytest --maxfail=1 --disable-warnings -q'
+                sh '''
+                # Si no existe el entorno virtual, lo creamos.
+                if [ ! -f "${WORKSPACE}/venv_test/bin/activate" ]; then
+                    rm -rf "${WORKSPACE}/venv_test"
+                    python3 -m venv --upgrade-deps "${WORKSPACE}/venv_test"
+                fi
+
+                # Activamos el entorno virtual y usamos el pip que allí se instaló 
+                . "${WORKSPACE}/venv_test/bin/activate"
+                pip install -r requirements.txt
+                pytest --maxfail=1 --disable-warnings -q
+                '''
             }
         }
         
@@ -33,7 +36,6 @@ pipeline {
             }
         }
     }
-    
     post {
         success {
             echo "Build succeeded! Image pushed successfully."
