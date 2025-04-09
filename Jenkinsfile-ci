@@ -1,23 +1,29 @@
 pipeline {
-    agent any
-    triggers {
-        githubPush()
+    agent {
+        docker {
+            image 'python:3.10-slim'  
+        }
     }
     environment {
-        DOCKER_HUB = credentials('dockerhub-credentials')
+        DOCKER_HUB_CREDS = credentials('dockerhub-credentials')
     }
     stages {
         stage('Test') {
             steps {
+                sh 'python -m pip install --upgrade pip'
                 sh 'pip install -r requirements.txt'
                 sh 'pytest --maxfail=1 --disable-warnings -q'
             }
         }
         stage('Build & Push Image') {
+            agent any  
             steps {
                 script {
                     docker.build("marifervl/whats-next-api:${env.BUILD_NUMBER}")
-                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-credentials') {
+                    docker.withRegistry(
+                        'https://registry.hub.docker.com',
+                        'dockerhub-credentials'  
+                    ) {
                         docker.image("marifervl/whats-next-api:${env.BUILD_NUMBER}").push()
                     }
                 }
