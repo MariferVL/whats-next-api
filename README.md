@@ -1,121 +1,136 @@
+# What's Next? API
 
-# What's Next?
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-2.0%2B-red.svg)](https://flask.palletsprojects.com/)
 
-This repository is the cornerstone for the "What's Next?" project. It encompasses the complete solution—from infrastructure provisioning and VM configuration to application deployment and CI/CD pipeline automation. The project aims to simulate a real-world DevOps environment, integrating modern practices and tools such as Terraform, Ansible, Docker, Jenkins, and security auditing.
+A modern API for managing educational sessions with secure authentication and granular access control. Perfect for schools, bootcamps, and workshop organizers.
 
-## Project Overview
+## 🌟 Key Features
+- **Session Management**  
+  Create, read, update, and delete class sessions with:
+  - Time slot validation (no overlapping sessions)
+  - Multiple session types (Classes, Demos, Q&A)
+  - Detailed metadata (title, description, instructor)
 
-The project includes the following key components:
+- **Smart Scheduling**  
+  `GET /api/schedule?date=DD-MM-YYYY` - View daily schedule with automatic time sorting
 
-- **AWS Infrastructure Provisioning:**  
-  Provision and manage two virtual machines (VMs) using Terraform:
-  - **Application VM:** Hosts the Flask API.
-  - **Database VM:** Hosts the database engine (e.g., PostgreSQL).
+- **Secure Auth System**  
+  - JWT token-based authentication
+  - Role-based access control (RBAC)
+  - Password hashing with bcrypt
 
-- **Configuration Management with Ansible:**  
-  Automate the configuration of the VMs:
-  - Install and configure necessary packages (Python, Docker, etc.).
-  - Set up the database server with security hardening.
-  - Configure environment variables and connectivity between the VMs.
+- **Developer Friendly**  
+  - Interactive Swagger documentation
+  - Docker-ready configuration
+  - Comprehensive error handling
 
-- **Flask API Development & Containerization:**  
-  Develop a Flask-based API and package it using Docker to ensure consistency across environments.  
+## 📚 API Documentation
+Explore our interactive API docs powered by Swagger/OpenAPI 3.0:
 
-- **CI/CD Pipeline Automation with Jenkins:**  
-  Automate the deployment process by:
-  - Running Terraform plans and applies.
-  - Executing Ansible playbooks.
-  - Building, testing, and deploying the Docker container.
-  - Integrating with Git and Jira to track changes and updates.
+[![Swagger](https://img.shields.io/badge/Swagger-85EA2D?logo=swagger&logoColor=black)]([http://your-ec2-ip:5000/swagger](https://app.swaggerhub.com/apis-docs/marifervl/whats-next_api/1.0.0))
 
-- **Security Audits & Compliance:**  
-  Integrate security best practices by performing:
-  - Static code analysis and vulnerability scans.
-  - Reviews of IAM policies, key-based access, and RBAC configurations.
+```yaml
+# Endpoint Highlights from swagger.yaml
 
-- **Demo Preparation:**  
-  Prepare and document the complete demo environment and presentation, including a runbook/checklist for the final video demonstration.
+/auth/register:
+  post: Create new user account
 
-## Architecture
+/auth/login:
+  post: Generate JWT access token
 
-The high-level architecture for this project includes:
-- **AWS:** Hosting two VMs for application and database.
-- **Terraform:** Managing the cloud infrastructure as code.
-- **Ansible:** Configuring and managing the environment.
-- **Flask API (Dockerized):** Providing the core application functionality.
-- **Jenkins CI/CD Pipeline:** Automating builds, tests, and deployments.
-- **Security Tools:** Ensuring the application and infrastructure comply with security standards.
-- **Collaboration Tools:** Jira for issue tracking and Git for version control.
+/api/classes:
+  get: List all sessions (public)
+  post: Create new session (authenticated)
 
-## Getting Started
+/api/schedule:
+  get: Get daily schedule with time filters
+```
+
+## 🚀 Quick Start
 
 ### Prerequisites
-
-- **Development Tools:**
-  - Git
-  - Python 3.12 or higher
-  - Docker 
-  - Terraform and Ansible 
-  - Jenkins 
-
-- **Accounts/Access:**
-  - AWS account with appropriate IAM permissions.
-  - Access to a container registry (Docker Hub, AWS ECR, etc.).
+- Python 3.9+
+- PostgreSQL/MariaDB
+- Docker (optional)
 
 ### Installation
+```bash
+git clone https://github.com/MariferVL/whats-next-api.git
+cd whats-next-api
 
-1. **Clone the Repository:**
+# Create virtual environment
+python3 -m venv venv && source venv/bin/activate
 
-   ```bash
-   git clone https://github.com/MariferVL/whats-next-api.git
-   cd whats-next-api
-   ```
+# Install dependencies
+pip install -r requirements.txt
 
-2. **Set Up Your Python Environment:**
+# Configure environment
+cp env_example .env
+```
 
-   ```bash
-   python3 -m venv .venv
-   .venv\Scripts\activate  # For Linux: source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
+### Database Setup
+```bash
+flask db init
+flask db migrate
+flask db upgrade
+```
 
-## Running the Flask API
+### Running the API
+```bash
+# Development
+flask run --host=0.0.0.0 --port=5000
 
-1. **Environment Variables:**
+# Production (Docker)
+docker build -t whatsnext-api .
+docker run -dp 5000:5000 --env-file .env whatsnext-api
+```
 
-   Set the necessary environment variables (e.g., in a `.env` file):
+## 🔐 Authentication Flow
+```mermaid
+sequenceDiagram
+    User->>API: POST /auth/login (email/password)
+    API->>DB: Verify credentials
+    DB-->>API: User data
+    API->>User: Return JWT token
+    User->>API: Subsequent requests with Bearer token
+    API->>User: Protected resources
+```
 
-   ```bash
-   export FLASK_APP=app.py
-   export FLASK_ENV=development
-   ```
+## 🗂 Project Structure
+```
+whats-next-api/
+├── app/
+│   ├── controllers/       # Business logic handlers
+│   ├── routes/            # API endpoint definitions
+│   ├── models.py          # Database models
+│   ├── utils/             # Helper functions
+├── tests/                 # Integration/unit tests
+├── Dockerfile             # Container configuration
+├── requirements.txt       # Python dependencies
+└── swagger.yaml           # OpenAPI specification
+```
 
-2. **Run the Application:**
+## 🛡 Security Features
+- **JWT Secret Rotation**: Automatically via `token_creator.py`
+- **Input Validation**: Strict schema validation for all endpoints
+- **Security Headers**: CORS, CSRF, and rate limiting ready
+- **RBAC Implementation**:  
+  ```python
+  @jwt_required()
+  def create_class():
+      if not current_user.is_professor:
+          abort(403, description="Insufficient permissions")
+  ```
 
-   ```bash
-   flask run
-   ```
+## 🤝 Contributing
+We welcome contributions! Please follow these steps:
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes with JIRA ticket reference (`[WN-123] Add feature`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-3. **Access the API:**
-
-   Open your browser and navigate to [http://localhost:5000](http://localhost:5000).
-
-## Future Work & Contributions
-
-- **CI/CD Integration:**  
-  Complete the Jenkins pipeline configuration for automated testing, deployment, and integration with Jira.
-
-- **Enhanced Security:**  
-  Integrate static analysis and vulnerability scanning tools into the pipeline.
-
-- **Feature Development:**  
-  Implement additional features based on project requirements and feedback.
-
-## Contributing Guidelines
-
-- Please follow the Git branching strategy:
-  - Use Jira-linked branches for all feature/bug fix commits.
-  - Reference the appropriate Jira ticket in commit messages.
-- Submit pull requests for review before merging into the main branch.
-
-
+## 📜 License
+Distributed under the MIT License. See `LICENSE` for more information.
