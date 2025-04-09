@@ -1,47 +1,48 @@
 pipeline {
-    agent any
+    agent none  
+
     environment {
         DOCKER_HUB_CREDS = credentials('dockerhub-credentials')
     }
-    stages {
-                
-        stage('Test') {
-            steps {
-                sh '''
-                # Si no existe el entorno virtual, lo creamos.
-                if [ ! -f "${WORKSPACE}/venv_test/bin/activate" ]; then
-                    rm -rf "${WORKSPACE}/venv_test"
-                    python3 -m venv --upgrade-deps "${WORKSPACE}/venv_test"
-                fi
 
-                # Activamos el entorno virtual y usamos el pip que allí se instaló 
-                . "${WORKSPACE}/venv_test/bin/activate"
-                pip install -r requirements.txt
-                pytest --maxfail=1 --disable-warnings -q
-                '''
+    stages {
+        stage('Test') {
+            agent {
+                docker {
+                    image 'python:3.10-slim'  
+                    args '-v /tmp:/tmp'  
+                }
+            }
+            steps {
+                sh 'pip install --upgrade pip'
+                sh 'pip install -r requirements.txt'
+                sh 'pytest --maxfail=1 --disable-warnings -q'
             }
         }
-        
-        stage('Build & Push Image') {
+
+        stage('Build & Push') {
+            agent any
             steps {
                 script {
-                    def image = docker.build("marifervl/whats-next-api:${env.BUILD_NUMBER}")
+                    docker.build("marifervl/whats-next-api:${env.BUILD_NUMBER}")
                     docker.withRegistry(
                         'https://registry.hub.docker.com',
                         'dockerhub-credentials'
-                    ) {
-                        image.push()
-                    }
+                    ) { image.push() }
                 }
             }
         }
     }
+
     post {
         success {
             echo "Build succeeded! Image pushed successfully."
         }
         failure {
             echo "Build failed. Please review the test logs and error messages."
+        }
+        always {
+            cleanWs()  
         }
     }
 }
