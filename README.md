@@ -29,7 +29,7 @@ A modern API for managing educational sessions with secure authentication and gr
 ## 📚 API Documentation
 Explore our interactive API docs powered by Swagger/OpenAPI 3.0:
 
-[![Swagger](https://img.shields.io/badge/Swagger-85EA2D?logo=swagger&logoColor=black)]([http://your-ec2-ip:5000/swagger](https://app.swaggerhub.com/apis-docs/marifervl/whats-next_api/1.0.0))
+[![Swagger](https://img.shields.io/badge/Swagger-85EA2D?logo=swagger&logoColor=black)](https://app.swaggerhub.com/apis-docs/marifervl/whats-next_api/1.0.0)
 
 ```yaml
 # Endpoint Highlights from swagger.yaml
