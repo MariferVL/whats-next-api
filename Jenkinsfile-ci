@@ -4,7 +4,7 @@ pipeline {
         githubPush()
     }
     environment {
-        DOCKER_HUB = credentials('docker-hub-credentials')
+        DOCKER_HUB = credentials('dockerhub-credentials')
     }
     stages {
         stage('Test') {
@@ -17,7 +17,7 @@ pipeline {
             steps {
                 script {
                     docker.build("marifervl/whats-next-api:${env.BUILD_NUMBER}")
-                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-credentials') {
                         docker.image("marifervl/whats-next-api:${env.BUILD_NUMBER}").push()
                     }
                 }
