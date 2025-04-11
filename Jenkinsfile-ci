@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_HUB_CREDS = credentials('dockerhub-credentials')
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -27,15 +23,18 @@ pipeline {
             }
         }
         stage('Build & Push') {
-
             steps {
-                script {
-                    def image = docker.build("marifervl/whats-next-api:${env.BUILD_NUMBER}")
-                    
-                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-credentials') {
-                        image.push("${env.BUILD_NUMBER}")
-                        image.push("latest")
-                    }
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_HUB_USR', passwordVariable: 'DOCKER_HUB_PSW')]) {
+                    sh '''
+                        docker build -t marifervl/whats-next-api:${BUILD_NUMBER} .
+                        
+                        docker tag marifervl/whats-next-api:${BUILD_NUMBER} marifervl/whats-next-api:latest
+                        
+                        echo "$DOCKER_HUB_PSW" | docker login -u "$DOCKER_HUB_USR" --password-stdin
+                        
+                        docker push marifervl/whats-next-api:${BUILD_NUMBER}
+                        docker push marifervl/whats-next-api:latest
+                    '''
                 }
             }
         }
