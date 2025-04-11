@@ -1,39 +1,45 @@
 pipeline {
-    agent none  
+    agent any
 
     environment {
         DOCKER_HUB_CREDS = credentials('dockerhub-credentials')
     }
 
     stages {
-        stage('Test') {
-            agent {
-                docker {
-                    image 'python:3.10-slim'  
-                    args '-v /tmp:/tmp'  
-                }
-            }
+        stage('Checkout') {
             steps {
-                sh 'pip install --upgrade pip'
-                sh 'pip install -r requirements.txt'
-                sh 'pytest --maxfail=1 --disable-warnings -q'
+                checkout scm
             }
         }
-
+        stage('Test API') {
+            steps {
+                sh '''
+                    if [ ! -d "${WORKSPACE}/venv_api" ] || [ ! -f "${WORKSPACE}/venv_api/bin/activate" ]; then
+                        echo "Creating or updating the API venv..."
+                        rm -rf "${WORKSPACE}/venv_api"
+                        python3 -m venv --upgrade-deps "${WORKSPACE}/venv_api"
+                    fi
+                    . "${WORKSPACE}/venv_api/bin/activate"
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                    pytest --maxfail=1 --disable-warnings -q
+                '''
+            }
+        }
         stage('Build & Push') {
-            agent any
+
             steps {
                 script {
-                    docker.build("marifervl/whats-next-api:${env.BUILD_NUMBER}")
-                    docker.withRegistry(
-                        'https://registry.hub.docker.com',
-                        'dockerhub-credentials'
-                    ) { image.push() }
+                    def image = docker.build("marifervl/whats-next-api:${env.BUILD_NUMBER}")
+                    
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-credentials') {
+                        image.push("${env.BUILD_NUMBER}")
+                        image.push("latest")
+                    }
                 }
             }
         }
     }
-
     post {
         success {
             echo "Build succeeded! Image pushed successfully."
@@ -42,7 +48,7 @@ pipeline {
             echo "Build failed. Please review the test logs and error messages."
         }
         always {
-            cleanWs()  
+            cleanWs()
         }
     }
 }
